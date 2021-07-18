@@ -1,0 +1,79 @@
+name: "Benchmark and verify"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '16'
+          distribution: 'adopt'
+
+      - name: Build with Maven
+        run: mvn package --quiet
+
+      - name: Run benchmarks
+        run:  java -jar target/benchmarks.jar -f 1 -wi 5 -i 25 -rf json
+
+      - name: Upload benchmarks
+        run: | 
+          curl -f \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d @jmh-result.json \
+            "https://benchmark-ci.herokuapp.com/api/benchmarks/$GITHUB_SHA"
+  
+  verify:
+    needs: benchmark
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Test
+        run: |
+          if [[ -z "$GITHUB_HEAD_REF" ]]; then
+            HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 1)
+          else
+            ANCESTOR=$(git merge-base "remotes/origin/$GITHUB_HEAD_REF" "remotes/origin/$GITHUB_BASE_REF")
+            HISTORY=$(git log "$ANCESTOR" --pretty=format:'%H' -n 1)
+          fi
+
+          PAYLOAD=$(
+            echo "$HISTORY" | jq -Rsc \
+              --arg c "$GITHUB_SHA" \
+              'split("\n") | map(select(. != "")) as $h | { current: $c, history: $h, threshold: 20 }'
+          )
+
+          echo "$PAYLOAD" | jq
+          
+          RESPONSE=$(
+            curl -f \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -d "$PAYLOAD" \
+              "https://benchmark-ci.herokuapp.com/api/benchmarks"
+          )
+
+          echo "$RESPONSE" | jq
+
+          if [[ $(echo "$RESPONSE" | jq -c '.success') = "false" ]]; then
+            echo "A benchmark exceeded the threshold"
+            exit 1
+          fi
