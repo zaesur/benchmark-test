@@ -30,15 +30,22 @@
  */
 
 package com.example;
+import org.openjdk.jmh.annotations.*;
 
-import org.openjdk.jmh.annotations.Benchmark;
+@State(Scope.Thread)
+public class Benchmarks {
 
-public class MyBenchmark {
+    int x = 0;
 
     @Benchmark
-    public void testMethod() {
-        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
-        // Put your benchmark code here.
+    public int baseline() throws Exception {
+        return x;
     }
+    
 
+    @Benchmark
+    public int sleep() throws Exception {
+        Thread.sleep(4000);
+        return x;
+    }
 }

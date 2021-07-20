@@ -7,13 +7,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 16
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           java-version: '16'
           distribution: 'adopt'
+
       - name: Build with Maven
-        run: mvn package
+        run: mvn package --quiet
+
       - name: Run benchmarks
-        run: java -jar target/benchmarks.jar
+        run:  java -jar target/benchmarks.jar -rff result-${GITHUB_SHA}.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v2
+        with:
+          name: result-${GITHUB_SHA}
+          path: result-${GITHUB_SHA}.json
