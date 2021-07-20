@@ -19,10 +19,21 @@ jobs:
       - name: Build with Maven
         run: mvn package --quiet
 
+      - name: Download all results
+        uses: actions/download-artifact@v2
+        with:
+          path: results
+
       - name: Run benchmarks
         run:  java -jar target/benchmarks.jar -f 1 -rff result-${GITHUB_SHA}.json
-
-      - name: Upload benchmark results
+           
+      - name: Process benchmarks
+        uses: zaesur/benchmark-ci@v1
+        with:
+          benchmarks-directory: results
+          threshold: 20
+        
+      - name: Upload benchmark
         uses: actions/upload-artifact@v2
         with:
           path: result-*.json
