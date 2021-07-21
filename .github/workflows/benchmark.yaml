@@ -21,8 +21,3 @@ jobs:
 
       - name: Run benchmarks
         run:  java -jar target/benchmarks.jar -f 1 -rff result-${GITHUB_SHA}.json
-
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v2
-        with:
-          path: result-*.json
