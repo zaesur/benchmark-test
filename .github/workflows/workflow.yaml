@@ -40,11 +40,12 @@ jobs:
 
       - name: Test
         run: |
+          HISTORY=$(git log --pretty=format:'%H' -n 3);
+
           PAYLOAD=$(
-            git log --pretty=format:'%H' -n 1 |
-            jq -Rsc \
+            echo "$HISTORY" | jq -Rsc \
               --arg c "$GITHUB_SHA" \
-              '{ current: $c, history: split("\n"), threshold: 20 }'
+              'split("\n") as $h | { current: $c, history: $h, threshold: 20 }'
           );
           
           RESPONSE=$(
