@@ -20,4 +20,8 @@ jobs:
         run: mvn package --quiet
 
       - name: Run benchmarks
-        run:  java -jar target/benchmarks.jar -f 1 -rff result-${GITHUB_SHA}.json
+        run:  java -jar target/benchmarks.jar -f 1 -rf json
+
+      - name: Upload benchmarks
+        run: | 
+          curl -X POST -H "Content-Type: application/json" -d jmh-result.json "https://benchmark-ci.herokuapp.com/api/benchmarks/$GITHUB_SHA"
