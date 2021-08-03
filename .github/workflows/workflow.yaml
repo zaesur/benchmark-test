@@ -1,0 +1,61 @@
+name: "Benchmark and verify"
+
+on: [push]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '16'
+          distribution: 'adopt'
+
+      - name: Build with Maven
+        run: mvn package --quiet
+
+      - name: Run benchmarks
+        run:  java -jar target/benchmarks.jar -f 3 -rf json
+
+      - name: Upload benchmarks
+        run: | 
+          curl -f \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d @jmh-result.json \
+            "https://benchmark-ci.herokuapp.com/api/benchmarks/$GITHUB_SHA"
+  
+  verify:
+    needs: benchmark
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: |
+          PAYLOAD=$(
+            git log --pretty=format:'%H' -n 1 |
+            jq -Rsc \
+              --arg c "$GITHUB_SHA" \
+              '{ current: $c, history: split("\n"), threshold: 20 }'
+          );
+          
+          RESPONSE=$(
+            curl \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -d "$PAYLOAD" \
+              "https://benchmark-ci.herokuapp.com/api/benchmarks"
+          );
+
+          if [ $(echo "$RESPONSE" | jq -c '.success') = "false" ]; then
+            echo "A benchmark exceeded the threshold"
+            exit 1
+          fi
