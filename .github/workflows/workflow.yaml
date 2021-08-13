@@ -20,7 +20,7 @@ jobs:
         run: mvn package --quiet
 
       - name: Run benchmarks
-        run:  java -jar target/benchmarks.jar -f 3 -rf json
+        run:  java -jar target/benchmarks.jar -f 1i -rf json
 
       - name: Upload benchmarks
         run: | 
