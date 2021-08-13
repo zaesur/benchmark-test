@@ -1,9 +1,6 @@
 name: "Benchmark and verify"
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -44,7 +41,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: ''
+          fetch-depth: 0
 
       - name: Test
         run: |
