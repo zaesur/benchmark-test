@@ -48,7 +48,7 @@ jobs:
 
       - name: Test
         run: |
-          HISTORY=$(git log "HEAD~1" --pretty=format:'%H' -n 3);
+          HISTORY=$(git log master --pretty=format:'%H' -n 3);
 
           PAYLOAD=$(
             echo "$HISTORY" | jq -Rsc \
