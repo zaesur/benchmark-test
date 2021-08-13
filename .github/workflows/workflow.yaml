@@ -43,6 +43,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Test
         run: |
@@ -55,7 +57,7 @@ jobs:
           );
           
           RESPONSE=$(
-            curl \
+            curl -vf \
               -X POST \
               -H "Content-Type: application/json" \
               -d "$PAYLOAD" \
