@@ -43,10 +43,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: ''
 
       - name: Test
         run: |
-          HISTORY=$(git log "$GITHUB_SHA~1" --pretty=format:'%H' -n 3);
+          HISTORY=$(git log "HEAD~1" --pretty=format:'%H' -n 3);
 
           PAYLOAD=$(
             echo "$HISTORY" | jq -Rsc \
