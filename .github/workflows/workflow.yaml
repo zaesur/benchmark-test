@@ -46,12 +46,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - run: git fetch origin master
+
       - name: Test
         run: |
-          if [[ -z "$GITHUB_HEAD_REF" ]]; then
+          if [[ -z "$GITHUB_BASE_REF" ]]; then
             HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 1)
           else
-            ANCESTOR=$(git merge-base "$GITHUB_HEAD_REF" "$GITHUB_BASE_REF")
+            ANCESTOR=$(git merge-base HEAD "$GITHUB_BASE_REF")
             HISTORY=$(git log "$ANCESTOR" --pretty=format:'%H' -n 1)
           fi
 
