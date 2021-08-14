@@ -51,7 +51,7 @@ jobs:
           if [[ -z "$GITHUB_HEAD_REF" ]]; then
             HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 1)
           else
-            ANCESTOR=$(git merge-base "$GITHUB_HEAD_REF" "$GITHUB_BASE_REF")
+            ANCESTOR=$(git merge-base "remotes/origin/$GITHUB_HEAD_REF" "remotes/origin/$GITHUB_BASE_REF")
             HISTORY=$(git log "$ANCESTOR" --pretty=format:'%H' -n 1)
           fi
 
