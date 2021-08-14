@@ -47,24 +47,4 @@ jobs:
           fetch-depth: 0
 
       - name: Test
-        run: |
-          HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 3);
-
-          PAYLOAD=$(
-            echo "$HISTORY" | jq -Rsc \
-              --arg c "$GITHUB_SHA" \
-              'split("\n") as $h | { current: $c, history: $h, threshold: 20 }'
-          );
-          
-          RESPONSE=$(
-            curl -vf \
-              -X POST \
-              -H "Content-Type: application/json" \
-              -d "$PAYLOAD" \
-              "https://benchmark-ci.herokuapp.com/api/benchmarks"
-          );
-
-          if [ $(echo "$RESPONSE" | jq -c '.success') = "false" ]; then
-            echo "A benchmark exceeded the threshold"
-            exit 1
-          fi
+        run: ./test.sh $GITHUB_SHA
