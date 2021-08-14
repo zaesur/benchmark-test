@@ -58,7 +58,7 @@ jobs:
           PAYLOAD=$(
             echo "$HISTORY" | jq -Rsc \
               --arg c "$GITHUB_SHA" \
-              'split("\n") | map(select(. != "")) as $h | { current: $c, history: $h, threshold: 20 }'
+              'split("\n") | map(select(. != "")) as $h | { current: $c, history: $h, threshold: -20 }'
           )
 
           echo "$PAYLOAD" | jq
