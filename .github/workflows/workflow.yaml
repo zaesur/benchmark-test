@@ -48,23 +48,32 @@ jobs:
 
       - name: Test
         run: |
-          HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 3);
+          if [[ -z "$GITHUB_HEAD_REF" ]]; then
+            HISTORY=$(git log HEAD~1 --pretty=format:'%H' -n 1)
+          else
+            ANCESTOR=$(git merge-base "$GITHUB_HEAD_REF" "$GITHUB_BASE_REF")
+            HISTORY=$(git log "$ANCESTOR" --pretty=format:'%H' -n 1)
+          fi
 
           PAYLOAD=$(
             echo "$HISTORY" | jq -Rsc \
               --arg c "$GITHUB_SHA" \
-              'split("\n") as $h | { current: $c, history: $h, threshold: 20 }'
-          );
+              'split("\n") | map(select(. != "")) as $h | { current: $c, history: $h, threshold: 20 }'
+          )
+
+          echo "$PAYLOAD" | jq
           
           RESPONSE=$(
-            curl -vf \
+            curl -f \
               -X POST \
               -H "Content-Type: application/json" \
               -d "$PAYLOAD" \
               "https://benchmark-ci.herokuapp.com/api/benchmarks"
-          );
+          )
 
-          if [ $(echo "$RESPONSE" | jq -c '.success') = "false" ]; then
+          echo "$RESPONSE" | jq
+
+          if [[ $(echo "$RESPONSE" | jq -c '.success') = "false" ]]; then
             echo "A benchmark exceeded the threshold"
             exit 1
           fi
