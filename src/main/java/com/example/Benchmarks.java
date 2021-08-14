@@ -45,7 +45,7 @@ public class Benchmarks {
 
     @Benchmark
     public int sleep() throws Exception {
-        Thread.sleep(4000);
+        Thread.sleep(6000);
         return x;
     }
 }
