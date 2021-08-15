@@ -1,16 +1,17 @@
 package com.example;
 
 public class Fibonacci {
+    private static int[] memo = new int[30];
+
     public static int fibonacci(int n) {
-        int prev = 0, curr = 1, hold;
-        if (n == 0) {
-            return prev;
+        if (n <= 1) {
+            return n;
+        } else if (memo[n] != 0) {
+            return memo[n];
+        } else {
+            int f = fibonacci(n-1) + fibonacci(n-2);
+            memo[n] = f;
+            return f;
         }
-        for (int i = 2; i <= n; i++) {
-            hold = prev + curr;
-            prev = curr;
-            curr = hold;
-        }
-        return curr;
     }
 }
